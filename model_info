@@ -1,0 +1,9 @@
+train-set : total records: (175341, 45)
+test-set : total records: (82332, 45)
+
+trainset: (157807, 45)
+validset: (17534, 45)
+
+embedding Dims : [50, 6, 4] total 60 nodes.
+
+categorical column which calls for 'others' category = "state"
