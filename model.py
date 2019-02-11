@@ -1,4 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
+
 '''
 codes for defining subclasses of Dataset and DataLoader are adopted from Yashu Seth's blog:
 https://yashuseth.blog/2018/07/22/pytorch-neural-network-for-tabular-data-with-categorical-embeddings/
@@ -13,7 +14,7 @@ class TabularDataset(Dataset):
 			self.cat_x = np.zeros((self.n, 1))
 
 		if output_col: #only one output column
-			self.y = data[output_col].astype(np.int64).values.reshape(-1,1)
+			self.y = data[output_col].astype(np.int64).values#.reshape(-1, 1)
 		else:
 			self.y = np.zeros((self.n, 1))
 
@@ -33,6 +34,7 @@ class TabularDataset(Dataset):
 
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 
 class FeedForwardNN(nn.Module):
 	def __init__(self, emb_dims, no_of_cont, lin_layer_sizes, output_size): #remove dropout parameters
@@ -87,8 +89,13 @@ def train(epoch):
 		for i, data in enumerate(trainloader):
 			y, cont_x, cat_x = data
 			y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
+
 			#feedForward and loss
 			preds = model(cont_x, cat_x)
+
+			#print("shape of preds: ", preds.shape)
+			#print("shape of label: ", y.shape)
+
 			loss = criterion(preds, y)
 		
 			#backprop
@@ -103,7 +110,8 @@ def train(epoch):
 				print("[%d %d] loss: %.6f"%(eidx+1, i+1, running_loss / running_batches))
 				running_loss = 0.0
 				running_batches = 0
-		validation(testloader)
+	
+		validation(validloader)
 
 def validation(dataloader):
 	model.eval()
@@ -137,6 +145,7 @@ def validation(dataloader):
 	print("accuracy: %.3f"%(sum(class_correct)/sum(class_pred)))
 	print("precision: %.3f"%(class_correct[1]/class_pred[1]))
 	print("recall: %.3f"%(class_correct[1]/class_total[1]))
+
 '''
 codes fot importing dataset and preprocessing are also adopted from Yashu Seth's blog:
 '''
@@ -182,7 +191,7 @@ train_data = df_train[:trN] #df_train
 valid_data = df_train[trN:] #df_train
 
 #setting up dataset and dataLoader
-batchsize = 1000
+batchsize = 128
 
 trainset = TabularDataset(train_data, cat_cols=categorical_features, output_col=output_feature)
 trainloader = DataLoader(trainset, batch_size=batchsize, shuffle=True, num_workers=1)
