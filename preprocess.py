@@ -70,7 +70,7 @@ import pandas as pd
 df_train = pd.read_csv(args.train_data)
 df_train = df_train.drop([col for col in df_train.columns if col not in used_cols], axis=1)
 df_test = pd.read_csv(args.test_data)
-df_test = df_test.drop([col for col in df_train.columns if col not in used_cols], axis=1)
+df_test = df_test.drop([col for col in df_test.columns if col not in used_cols], axis=1)
 
 # label encoding for categorical features
 print("label encoding...")
