@@ -54,6 +54,8 @@ model = FeedForwardNN(emb_dims, no_of_cont=no_of_cont, lin_layer_sizes=lin_layer
 print("reloading model from file...")
 model.load_state_dict(torch.load(args.data_prefix + ".best.model"))
 
+model.test(isValidation=False)
+
 # setup dataset
 import pandas as pd
 from model import TabularDataset

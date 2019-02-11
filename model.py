@@ -79,30 +79,57 @@ class FeedForwardNN(nn.Module):
 
 		return F.log_softmax(self.output_layer(x), dim=1)
 
+	def train(self, data_prefix, trainloader, validloader, device, max_epochs, criterion, optimizer, validFreq, patience):
+		val_err = 0.0
+		best_err = 0.0
+		bad_counter = 0
+		estop = False
 
-	def test(self, isReload=False, isValidation=False, data_prefix='unsw', batch_size=128):
+		for eidx in range(max_epochs):
+			for i, data in enumerate(trainloader):
+				y, cont_x, cat_x = data
+				y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
+				preds = self.forward(cont_x, cat_x)
+				loss = criterion(preds, y)
+
+				optimizer.zero_grad()
+				loss.backward()
+				optimizer.step()
+
+		# for each validFreq validate model and save error
+			if eidx % validFreq == 0:
+				val_err = 0.0
+				for i, data in enumerate(validloader):
+					y, cont_x, cat_x = data
+					y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
+					preds = self.forward(cont_x, cat_x)
+					loss = criterion(preds, y)
+
+					val_err += loss.item()
+
+				val_err /= i
+				print("edix: %d, err: %.4f"%(eidx, val_err))
+
+		# if achieving best error, save to history file and save model
+				if eidx==0 or val_err <= best_err:
+					print("above is the best model sofar...")
+					best_err = val_err
+					torch.save(self.state_dict(), data_prefix + ".best.model")
+		# increment bad_counter and early-stop if appropriate
+				if eidx > patience and val_err > best_err:
+					bad_counter += 1
+					if bad_counter > patience:
+						estop = True
+						break
+
+			if estop:
+				print("early stop!")
+				break
+
+	def test(self, testloader, device):
 		'''
 		codes adopted from https://pytorch.org tutorial 60 minutes blitz
-		'''
-		# loading best model from file
-		if isReload:
-			print("reloading model from file...")
-			self.load_state_dict(torch.load(data_prefix + ".best.model"))
-		
-		# setup dataset
-		import pandas as pd
-		import _pickle as pkl
-		print("importing dataset from pkl file...")
-		if isValidation:
-			df_test = pd.read_pickle(data_prefix + ".val.pkl")
-		else:
-			df_test = pd.read_pickle(data_prefix + ".test.pkl")
-		with open(data_prefix + ".cols.pkl", "rb") as fp:
-			cols_dict = pkl.load(fp)
-
-		testset = TabularDataset(df_test, cat_cols=cols_dict["cat_cols"], output_col=cols_dict["output_cols"])
-		testloader = DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=1)
-
+		'''	
 		# variables for score calculation
 		class_pred = [0.0 for i in range(2)]
 		class_correct = [0.0 for i in range(2)]
@@ -114,7 +141,7 @@ class FeedForwardNN(nn.Module):
 			y, cont_x, cat_x = data
 			y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
 			
-			output = model(cont_x, cat_x)
+			output = self.forward(cont_x, cat_x)
 			_, preds = torch.max(output.data, 1)
 
 			c = (preds == y).squeeze()
@@ -126,7 +153,7 @@ class FeedForwardNN(nn.Module):
 				class_total[label] += 1
 
 			if i % 100 == 99:
-				print("%d th records processed..." % ((i+1) * batch_size))
+				print("%d th records processed..." % ((i+1) * testloader.batch_size))
 
 		# score output
 		print("accuracy: %.4f"%(sum(class_correct)/sum(class_pred)))

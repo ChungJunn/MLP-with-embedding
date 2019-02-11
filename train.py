@@ -43,13 +43,14 @@ import argparse
 
 parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("--data_prefix", type=str, default='unsw', help="output dir")
+parser.add_argument("--num_hidden", type=int, default=4, help="output dir")
 parser.add_argument("--hidden1", type=int, default=200, help="output dir")
 parser.add_argument("--hidden2", type=int, default=100, help="output dir")
 parser.add_argument("--hidden3", type=int, default=50, help="output dir")
 parser.add_argument("--hidden4", type=int, default=20, help="output dir")
 parser.add_argument("--output_dim", type=int, default=2, help="output dir")
 parser.add_argument("--loss", type=str, default='NLLLoss', help="output dir")
-parser.add_argument("--optimizer", type=str, default='SGD', help="output dir")
+parser.add_argument("--optimizer", type=str, default='Adadelta', help="output dir")
 parser.add_argument("--lr", type=float, default='0.05', help="output dir")
 parser.add_argument("--batch_size", type=int, default=128, help="output dir")
 parser.add_argument("--max_epochs", type=int, default=1000, help="output dir")
@@ -87,12 +88,13 @@ from model import FeedForwardNN
 cat_dims = cols_dict["cat_dims"]
 emb_dims = [(cat_dim, min(10, cat_dim // 2)) for cat_dim in cat_dims]
 no_of_cont = len(cols_dict["cont_cols"])
+lin_layer_sizes = [args.hidden1, args.hidden2, args.hidden3, args.hidden4]
 
 #cat_dims = [df_train[col].nunique() for col in categorical_features]
 #emb_dims = [(cat_dim, min(10, cat_dim // 2)) for cat_dim in cat_dims]
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = FeedForwardNN(emb_dims, no_of_cont=no_of_cont, lin_layer_sizes=[args.hidden1, args.hidden2, args.hidden3, args.hidden4], output_size=args.output_dim).to(device)
+model = FeedForwardNN(emb_dims, no_of_cont=no_of_cont, lin_layer_sizes=lin_layer_sizes[:args.num_hidden], output_size=args.output_dim).to(device)
 
 # print model_option also as a file
 model_options = vars(args)
@@ -107,49 +109,15 @@ loss = "torch.nn." + args.loss
 optimizer = eval(optimizer)(model.parameters(), lr=args.lr)
 criterion = eval(loss)()
 
-val_err = 0.0
-best_err = 0.0
-bad_counter = 0
-estop = False
+model.train(data_prefix=args.data_prefix,
+	trainloader=trainloader,
+	validloader=validloader,
+	device=device,
+	max_epochs=args.max_epochs,
+	criterion=criterion,
+	optimizer=optimizer,
+	validFreq=args.validFreq,
+	patience=args.patience)
 
-for eidx in range(args.max_epochs):
-	for i, data in enumerate(trainloader):
-		y, cont_x, cat_x = data
-		y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
-		preds = model(cont_x, cat_x)
-		loss = criterion(preds, y)
-
-		optimizer.zero_grad()
-		loss.backward()
-		optimizer.step()
-
-# for each validFreq validate model and save error
-	if eidx % args.validFreq == 0:
-		val_err = 0.0
-		for i, data in enumerate(validloader):
-			y, cont_x, cat_x = data
-			y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
-			preds = model(cont_x, cat_x)
-			loss = criterion(preds, y)
-
-			val_err += loss.item()
-				
-		val_err /= i
-		print("edix: %d, err: %.4f"%(eidx, val_err))
-
-# if achieving best error, save to history file and save model
-		if eidx==0 or val_err <= best_err:
-			print("above is the best model sofar...")
-			best_err = val_err
-			torch.save(model.state_dict(), args.data_prefix + ".best.model")
-# increment bad_counter and early-stop if appropriate
-		if eidx > args.patience and val_err > best_err:
-			bad_counter += 1
-			if bad_counter > args.patience:
-				estop = True
-				break
-
-	if estop:
-		print("early stop!")
-		break
-
+model.test(testloader=trainloader, device=device)
+model.test(testloader=validloader, device=device)
