@@ -32,7 +32,7 @@ class TabularDataset(Dataset):
 	def __getitem__(self, idx):
 		return [self.y[idx], self.cont_x[idx], self.cat_x[idx]]
 
-
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 class FeedForwardNN(nn.Module):
@@ -79,88 +79,6 @@ class FeedForwardNN(nn.Module):
 
 		return F.log_softmax(self.output_layer(x), dim=1)
 
-
-	def learn(self,
-		data_prefix="unsw",
-		max_epochs=1000,
-		batch_size=128,
-		loss='NLLLoss',
-		optimizer='SGD',
-		lr=0.05,
-		validFreq=5,
-		patience=5):
-	
-		# load dataset and create dataloader from pkl file
-		print("importing datasets from pkl file...")
-		import pandas as pd
-		import _pickle as pkl
-		df_train = pd.read_pickle(data_prefix + ".tr.pkl")
-		df_valid = pd.read_pickle(data_prefix + ".val.pkl")
-		
-		with open(data_prefix + ".cols.pkl", "rb") as fp:
-			cols_dict = pkl.load(fp)
-
-		trainset = TabularDataset(df_train, cat_cols=cols_dict["cat_cols"], output_col=cols_dict["output_cols"])
-		validset = TabularDataset(df_valid, cat_cols=cols_dict["cat_cols"], output_col=cols_dict["output_cols"])
-
-		trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=1)
-		validloader = DataLoader(validset, batch_size=batch_size, shuffle=True, num_workers=1)
-
-		# create training history file
-		print(str(self.lin_layers))
-		
-		# train for max_epochs
-		print("training...")
-		optimizer = "torch.optim." + optimizer
-		loss = "torch.nn." + loss
-		optimizer = eval(optimizer)(self.parameters(), lr=lr)
-		criterion = eval(loss)()
-
-		val_err = 0.0
-		best_err = 0.0
-		bad_counter = 0
-		estop = False
-
-		for eidx in range(max_epochs):
-			for i, data in enumerate(trainloader):
-				y, cont_x, cat_x = data
-				y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
-				preds = self.forward(cont_x, cat_x)
-				loss = criterion(preds, y)
-
-				optimizer.zero_grad()
-				loss.backward()
-				optimizer.step()
-
-		# for each validFreq validate model and save error
-			if eidx % validFreq == 0:
-				val_err = 0.0
-				for i, data in enumerate(validloader):
-					y, cont_x, cat_x = data
-					y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
-					preds = self.forward(cont_x, cat_x)
-					loss = criterion(preds, y)
-
-					val_err += loss.item()
-				
-				val_err /= i
-				print("edix: %d, err: %.4f"%(eidx, val_err))
-
-		# if achieving best error, save to history file and save model
-				if eidx==0 or val_err <= best_err:
-					print("above is the best model sofar...")
-					best_err = val_err
-					torch.save(self.state_dict(), data_prefix + ".best.model")
-		# increment bad_counter and early-stop if appropriate
-				if eidx > patience and val_err > best_err:
-					bad_counter += 1
-					if bad_counter > patience:
-						estop = True
-						break
-				
-			if estop:
-				print("early stop!")
-				break
 
 	def test(self, isReload=False, isValidation=False, data_prefix='unsw', batch_size=128):
 		'''
@@ -215,14 +133,3 @@ class FeedForwardNN(nn.Module):
 		print("precision: %.4f"%(class_correct[1]/class_pred[1]))
 		print("recall: %.4f"%(class_correct[1]/class_total[1]))
 
-			
-#define embedding layer sizes
-cat_dims = [133, 13, 9]
-emb_dims = [(cat_dim, min(10, cat_dim // 2)) for cat_dim in cat_dims]
-
-#setup model
-import torch.cuda
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = FeedForwardNN(emb_dims, no_of_cont=39, lin_layer_sizes=[200, 100, 50, 20], output_size=2).to(device)
-model.learn()
-model.test(isValidation=True)

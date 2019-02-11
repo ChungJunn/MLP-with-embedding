@@ -61,6 +61,7 @@ with open(args.cat_cols, "rt") as fp:
 	cat_cols = [col.strip() for col in fp.readline().split(',')]
 with open(args.output_cols, "rt") as fp:
 	output_cols = [col.strip() for col in fp.readline().split(',')]
+
 cols_dict = {"cont_cols":cont_cols, "cat_cols":cat_cols, "output_cols":output_cols}
 used_cols = cont_cols + cat_cols + output_cols
 
@@ -71,6 +72,9 @@ df_train = pd.read_csv(args.train_data)
 df_train = df_train.drop([col for col in df_train.columns if col not in used_cols], axis=1)
 df_test = pd.read_csv(args.test_data)
 df_test = df_test.drop([col for col in df_test.columns if col not in used_cols], axis=1)
+
+# save number of unique values for each cat_cols for train.py
+cols_dict["cat_dims"] = [df_train[col].nunique() for col in cat_cols]
 
 # label encoding for categorical features
 print("label encoding...")
