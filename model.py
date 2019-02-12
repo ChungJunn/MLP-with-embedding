@@ -114,6 +114,7 @@ class FeedForwardNN(nn.Module):
 				if eidx==0 or val_err <= best_err:
 					print("above is the best model sofar...")
 					best_err = val_err
+					bad_counter = 0
 					torch.save(self.state_dict(), data_prefix + "." + saveto + ".model_best.pkl")
 		# increment bad_counter and early-stop if appropriate
 				if eidx > patience and val_err > best_err:
