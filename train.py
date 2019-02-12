@@ -43,6 +43,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("--data_prefix", type=str, default='unsw', help="output dir")
+parser.add_argument("--saveto", type=str, default='', help="output dir")
 parser.add_argument("--num_hidden", type=int, default=4, help="output dir")
 parser.add_argument("--hidden1", type=int, default=200, help="output dir")
 parser.add_argument("--hidden2", type=int, default=100, help="output dir")
@@ -55,7 +56,7 @@ parser.add_argument("--lr", type=float, default='0.05', help="output dir")
 parser.add_argument("--batch_size", type=int, default=128, help="output dir")
 parser.add_argument("--max_epochs", type=int, default=1000, help="output dir")
 parser.add_argument("--validFreq", type=int, default=5, help="output dir")
-parser.add_argument("--patience", type=int, default=5, help="output dir")
+parser.add_argument("--patience", type=int, default=30, help="output dir")
 
 args = parser.parse_args()
 
@@ -71,6 +72,8 @@ df_valid = pd.read_pickle(args.data_prefix + ".val.pkl")
 
 with open(args.data_prefix + ".cols.pkl", "rb") as fp:
 	cols_dict = pkl.load(fp)
+if cols_dict["cat_cols"] == None:
+	cols_dict["cat_cols"] = []
 
 print("preparing dataloader")
 trainset = TabularDataset(df_train, cat_cols=cols_dict["cat_cols"], output_col=cols_dict["output_cols"])
@@ -99,7 +102,7 @@ model = FeedForwardNN(emb_dims, no_of_cont=no_of_cont, lin_layer_sizes=lin_layer
 # print model_option also as a file
 model_options = vars(args)
 print(model_options)
-with open(args.data_prefix + ".model_option.pkl", "wb") as fp:
+with open(args.data_prefix + "." + args.saveto + ".model_option.pkl", "wb") as fp:
 	pkl.dump(vars(args), fp)
 
 # train for max_epochs
@@ -110,6 +113,7 @@ optimizer = eval(optimizer)(model.parameters(), lr=args.lr)
 criterion = eval(loss)()
 
 model.train(data_prefix=args.data_prefix,
+	saveto=args.saveto,
 	trainloader=trainloader,
 	validloader=validloader,
 	device=device,

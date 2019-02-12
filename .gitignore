@@ -1,2 +1,8 @@
 *.pkl
 *.model
+others/
+__*
+log*
+input*
+*.sh
+temp*

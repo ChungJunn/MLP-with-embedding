@@ -79,7 +79,7 @@ class FeedForwardNN(nn.Module):
 
 		return F.log_softmax(self.output_layer(x), dim=1)
 
-	def train(self, data_prefix, trainloader, validloader, device, max_epochs, criterion, optimizer, validFreq, patience):
+	def train(self, data_prefix, saveto, trainloader, validloader, device, max_epochs, criterion, optimizer, validFreq, patience):
 		val_err = 0.0
 		best_err = 0.0
 		bad_counter = 0
@@ -114,7 +114,7 @@ class FeedForwardNN(nn.Module):
 				if eidx==0 or val_err <= best_err:
 					print("above is the best model sofar...")
 					best_err = val_err
-					torch.save(self.state_dict(), data_prefix + ".best.model")
+					torch.save(self.state_dict(), data_prefix + "." + saveto + ".model_best.pkl")
 		# increment bad_counter and early-stop if appropriate
 				if eidx > patience and val_err > best_err:
 					bad_counter += 1
