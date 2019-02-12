@@ -43,7 +43,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("--data_prefix", type=str, default='unsw', help="output dir")
-parser.add_argument("--saveto", type=str, default='', help="output dir")
+parser.add_argument("--saveto", type=str, default='saveto', help="output dir")
 parser.add_argument("--num_hidden", type=int, default=4, help="output dir")
 parser.add_argument("--hidden1", type=int, default=200, help="output dir")
 parser.add_argument("--hidden2", type=int, default=100, help="output dir")
@@ -123,5 +123,11 @@ model.train(data_prefix=args.data_prefix,
 	validFreq=args.validFreq,
 	patience=args.patience)
 
-model.test(testloader=trainloader, device=device)
-model.test(testloader=validloader, device=device)
+model.test(testloader=trainloader,
+	data_prefix=args.data_prefix,
+	loadfrom=args.saveto,
+	device=device)
+model.test(testloader=validloader,
+	data_prefix=args.data_prefix,
+	loadfrom=args.saveto,
+	device=device)
