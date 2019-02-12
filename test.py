@@ -18,6 +18,8 @@ number of samples in a batch
 import argparse
 parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("--data_prefix", type=str, default='unsw', help="output dir")
+parser.add_argument("--loadfrom", type=str, default='', help="output dir")
+parser.add_argument("--batch_size", type=int, default=128, help="output dir")
 args = parser.parse_args()
 
 '''
@@ -26,7 +28,7 @@ codes adopted from https://pytorch.org tutorial 60 minutes blitz
 # load model options
 print("loading model_options...")
 import _pickle as pkl
-with open(args.data_prefix + ".model_options.pkl", "rb") as fp:
+with open(args.data_prefix + "." + args.loadfrom + ".model_options.pkl", "rb") as fp:
 	model_options = pkl.load(fp)
 with open(args.data_prefix + ".cols.pkl", "rb") as fp:
 	cols_dict = pkl.load(fp)
@@ -47,10 +49,6 @@ print("building model...")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = FeedForwardNN(emb_dims, no_of_cont=no_of_cont, lin_layer_sizes=lin_layer_sizes, output_size=model_options['output_dim']).to(device)
 
-# loading best model from file
-print("reloading model parameters from file...")
-model.load_state_dict(torch.load(args.data_prefix + ".best.model"))
-
 # setup dataset
 import pandas as pd
 from model import TabularDataset
@@ -63,4 +61,7 @@ testset = TabularDataset(df_test, cat_cols=cols_dict["cat_cols"], output_col=col
 testloader = DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=1)
 
 # test
-model.test(testloader=testloader, device=device)
+model.test(testloader=testloader,
+	data_prefix=args.data_prefix,
+	loadfrom=args.loadfrom, 
+	device=device)

@@ -126,10 +126,13 @@ class FeedForwardNN(nn.Module):
 				print("early stop!")
 				break
 
-	def test(self, testloader, device):
+	def test(self, testloader, data_prefix, loadfrom, device):
 		'''
 		codes adopted from https://pytorch.org tutorial 60 minutes blitz
 		'''	
+		# load best parameter from file
+		self.load_state_dict(torch.load(data_prefix + "." + loadfrom + ".model_best.pkl"))
+
 		# variables for score calculation
 		class_pred = [0.0 for i in range(2)]
 		class_correct = [0.0 for i in range(2)]
