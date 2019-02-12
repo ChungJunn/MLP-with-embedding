@@ -56,7 +56,7 @@ parser.add_argument("--lr", type=float, default='0.05', help="output dir")
 parser.add_argument("--batch_size", type=int, default=128, help="output dir")
 parser.add_argument("--max_epochs", type=int, default=1000, help="output dir")
 parser.add_argument("--validFreq", type=int, default=5, help="output dir")
-parser.add_argument("--patience", type=int, default=30, help="output dir")
+parser.add_argument("--patience", type=int, default=10, help="output dir")
 
 args = parser.parse_args()
 
