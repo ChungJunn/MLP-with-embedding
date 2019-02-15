@@ -1,62 +1,40 @@
 '''
 train.py
 --------
-set up model with given commandline arguments. Then train the model 
-
-command line arguments using argparse
--------------------------------------
---data_prefix : str
-name of dataset to train and evaluate on
-
---hidden1 : int
-number of units in first hidden layer
-
---hidden2 : int
-number of units in second hidden layer
-
---hidden3 : int
-number of units in third hidden layer
-
---hidden4 : int
-number of units in fourth hidden layer
-
---output_dim : int
-number of units in output layer
-
---loss : str
-name of loss function
-
---optimizer : str
-name of optimizer
-
---lr : float
-learning rate
-
---max_epochs : int
-maximum number of epochs for training
-
---validFreq : int
-number of epochs inbetween validation
+set up model with given commandline arguments. Then train the model it goes through the following steps:
+	1) take input arguments through argparse
+	2) create dataloader with train and validation data
+	3) build model
+	4) train the model using model.train() function -> refer to model.py
+	5) save results as files
 '''
 # argparser
 import argparse
 
 parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument("--data_prefix", type=str, default='unsw', help="output dir")
-parser.add_argument("--saveto", type=str, default='saveto', help="output dir")
-parser.add_argument("--num_hidden", type=int, default=4, help="output dir")
-parser.add_argument("--hidden1", type=int, default=200, help="output dir")
-parser.add_argument("--hidden2", type=int, default=100, help="output dir")
-parser.add_argument("--hidden3", type=int, default=50, help="output dir")
-parser.add_argument("--hidden4", type=int, default=20, help="output dir")
-parser.add_argument("--output_dim", type=int, default=2, help="output dir")
-parser.add_argument("--loss", type=str, default='NLLLoss', help="output dir")
-parser.add_argument("--optimizer", type=str, default='Adadelta', help="output dir")
-parser.add_argument("--lr", type=float, default='0.05', help="output dir")
-parser.add_argument("--batch_size", type=int, default=128, help="output dir")
-parser.add_argument("--max_epochs", type=int, default=1000, help="output dir")
-parser.add_argument("--validFreq", type=int, default=5, help="output dir")
-parser.add_argument("--patience", type=int, default=10, help="output dir")
+
+# for loading input files
+parser.add_argument("--data_prefix", type=str, default='unsw', help="str, prefix included in the names of training and validation dataset in pkl files")
+
+# for model saving
+parser.add_argument("--saveto", type=str, default='saveto', help="str, During training, the model writes its parameters into a file whenever the model's validation score imporves. 'saveto' is a string to include in the name of that file (in addition to prefix)")
+
+# model architecture
+parser.add_argument("--num_hidden", type=int, default=4, help="int, must be an integer within the range [1, 4]")
+parser.add_argument("--hidden1", type=int, default=200, help="int")
+parser.add_argument("--hidden2", type=int, default=100, help="int")
+parser.add_argument("--hidden3", type=int, default=50, help="int")
+parser.add_argument("--hidden4", type=int, default=20, help="int")
+parser.add_argument("--output_dim", type=int, default=2, help="int")
+
+# training parameters
+parser.add_argument("--batch_size", type=int, default=128, help="int")
+parser.add_argument("--loss", type=str, default='NLLLoss', help="str, name of loss function. Should match the names in torch.nn")
+parser.add_argument("--optimizer", type=str, default='Adadelta', help="str, name of optimizer. Should match the names torch.optim")
+parser.add_argument("--lr", type=float, default='0.05', help="float")
+parser.add_argument("--max_epochs", type=int, default=1000, help="int")
+parser.add_argument("--validFreq", type=int, default=5, help="int")
+parser.add_argument("--patience", type=int, default=10, help="int")
 
 args = parser.parse_args()
 
