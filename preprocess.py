@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTex
 
 # CSV files
 parser.add_argument("--train_data", type=str, default='UNSW_NB15_training-set.csv', help="str, path to train csv file")
-parser.add_argument("--test_data", type=str, default='UNSW_NB15_testing-set_unknowns_removed', help="str, path to test csv file")
+parser.add_argument("--test_data", type=str, default='UNSW_NB15_testing-set_unknowns_removed.csv', help="str, path to test csv file")
 
 # column(feature) information
 parser.add_argument("--cont_cols", type=str, default='cont_cols.csv', help="str, path to a file which specify the column names of output features")
@@ -70,9 +70,10 @@ for cat_col in cat_cols:
 
 
 # normalize continuous data
+import sys
 print("normalizing datasets...")
-if args.normalization not in ['standard', 'minmax']:
-	print("normalization should be either standard or minmax")
+if args.normalization not in ['standard', 'minmax']: # handling invalid input
+	sys.exit("--normalization arguement should be either 'standard' or 'minmax'")
 elif args.normalization == 'standard':
 	from sklearn.preprocessing import StandardScaler
 	scaler = StandardScaler()
@@ -92,6 +93,12 @@ valN = np.ceil(df_train.shape[0] * args.val_ratio).astype('int')
 
 valid_data = df_train[:valN]
 train_data = df_train[valN:]
+
+# print shapes of resulting dataframes
+print("showing shapes of resulting dataframes")
+print("\ttrain : ", train_data.shape)
+print("\tvalid : ", valid_data.shape)
+print("\ttest : ", df_test.shape)
 
 #save results into pkl file
 print("saving into pkl files...")
