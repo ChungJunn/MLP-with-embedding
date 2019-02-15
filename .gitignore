@@ -1,8 +1,10 @@
 *.pkl
 *.model
 others/
+rmsprop/
 __*
 log*
 input*
 *.sh
 temp*
+*log

@@ -102,6 +102,7 @@ model = FeedForwardNN(emb_dims, no_of_cont=no_of_cont, lin_layer_sizes=lin_layer
 # print model_option also as a file
 model_options = vars(args)
 print(model_options)
+print(model)
 with open(args.data_prefix + "." + args.saveto + ".model_options.pkl", "wb") as fp:
 	pkl.dump(vars(args), fp)
 
