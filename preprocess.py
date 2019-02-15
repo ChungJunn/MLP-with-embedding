@@ -1,57 +1,37 @@
 '''
 preprocess.py
 -------------
-load  train dataset and test datasets csv files into pandas datafram and preprocess them in the following ways:
+load  train dataset and test datasets csv files into pandas dataframe and preprocess them in the following ways:
 
 1) label encoding of categorical data - preparing for embedding
 2) normalize numeric data (scaler is fit to training set)
 3) divide train dataset into train and valid dataset with given ratio
 
-the results are preprocessed data in dataframes. They are saved into three different files using pickle
-
-command line arguments using argparse
--------------------------------------
---data_prefix : str
-name of dataset. It is used when naming the output pickle files. output files will be named as, <data_prefix>.tr.pkl , <data_prefix>.val.pkl, and <data_prefix>.test.pkl.
-
---train_data : str (path to csv file)
-path to training data csv file
-
---test_Data : str (path to csv file)
-path to test data csv file
-
---normalization : str ("standard" or "minmax")
-specifiy the type of normalization scheme
-
---val_ratio : float
-specify the portion of training data which will be separated out as validation set
-
---cont_cols : str (path to csv file)
-path to a file which specify the column names of continuous data in given dataset
-
---cat_cols : str (path to csv file)
-path to a file which specify the column names of categorical data in given dataset
-
---output_cols : str (path to csv file)
-path to a file which specify the column names of output data in given dataset
+the results are preprocessed data in dataframes. They are saved into three separate pkl files using pickle
 '''
 
 # argparser
 import os
 import argparse
-
 parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument("--data_prefix", type=str, default='unsw', help="output dir")
-parser.add_argument("--train_data", type=str, default='UNSW_NB15_training-set.csv', help="output dir")
-parser.add_argument("--test_data", type=str, default='UNSW_NB15_testing-set_unknowns_removed.csv', help="output dir")
-parser.add_argument("--normalization", type=str, default='standard', help="output dir")
-parser.add_argument("--val_ratio", type=float, default=0.1, help="output dir")
-parser.add_argument("--cont_cols", type=str, default='cont_cols.csv', help="output dir")
-parser.add_argument("--cat_cols", type=str, default='cat_cols.csv', help="output dir")
-parser.add_argument("--output_cols", type=str, default='output_cols.csv', help="output dir")
+
+# CSV files
+parser.add_argument("--train_data", type=str, default='UNSW_NB15_training-set.csv', help="str, path to train csv file")
+parser.add_argument("--test_data", type=str, default='UNSW_NB15_testing-set_unknowns_removed', help="str, path to test csv file")
+
+# column(feature) information
+parser.add_argument("--cont_cols", type=str, default='cont_cols.csv', help="str, path to a file which specify the column names of output features")
+parser.add_argument("--cat_cols", type=str, default='cat_cols.csv', help="str, path to a file which specify the column names of categorical features")
+parser.add_argument("--output_cols", type=str, default='output_cols.csv', help="str, path to a file which specify the column names of output features")
+
+# other parameters
+parser.add_argument("--data_prefix", type=str, default='unsw', help="str, prefix to be included in names of pkl files")
+parser.add_argument("--normalization", type=str, default='standard', help="str ('standard' or 'minmax'), spcify the type of normalization scheme")
+parser.add_argument("--val_ratio", type=float, default=0.1, help="float, specify how much portion of training dataset will be separated for validatin dataset")
 
 args = parser.parse_args()
 print(args)
+
 
 # read in column names from csv files
 print("reading column information from files...")
