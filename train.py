@@ -65,8 +65,6 @@ df_valid = pd.read_pickle(data_prefix + ".val.pkl")
 
 with open(data_prefix + ".cols.pkl", "rb") as fp:
 	cols_dict = pkl.load(fp)
-if cols_dict["cat_cols"] == None:
-	cols_dict["cat_cols"] = []
 
 print("preparing dataloader")
 trainset = TabularDataset(df_train, cat_cols=cols_dict["cat_cols"], output_col=cols_dict["output_cols"])

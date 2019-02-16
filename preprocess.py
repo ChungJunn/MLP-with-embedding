@@ -42,7 +42,7 @@ with open(args.cat_cols, "rt") as fp:
 with open(args.output_cols, "rt") as fp:
 	output_cols = [col.strip() for col in fp.readline().split(',')]
 
-if cat_cols[0]=='none':
+if cat_cols[0]=='': # case there is no categorical features
 	cat_cols = []
 
 cols_dict = {"cont_cols":cont_cols, "cat_cols":cat_cols, "output_cols":output_cols}
