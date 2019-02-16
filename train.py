@@ -19,7 +19,7 @@ parser.add_argument("--data_prefix", type=str, default='unsw', help="str, prefix
 # for model saving
 parser.add_argument("--saveto", type=str, default='saveto', help="str, During training, the model writes its parameters into a file whenever the model's validation score imporves. 'saveto' is a string to include in the name of that file (in addition to prefix)")
 parser.add_argument("--isReload", dest='isReload', action='store_true', help="no argument, when this option is specified the model will re-load existing model from files. Only possible when the model with the same 'data_prefix' and 'saveto' had been training previously. The model will simply adopt all training, model, and other parameters from saved files.")
-parser.set_defaults(isReload=True)
+parser.set_defaults(isReload=False)
 
 # model architecture
 parser.add_argument("--num_hidden", type=int, default=4, help="int, must be an integer within the range [1, 4]")
@@ -43,9 +43,11 @@ args = parser.parse_args()
 # in case isReload load model_options file
 import _pickle as pkl
 if args.isReload:
+	print("re-loading model options...")
 	with open(args.data_prefix + "." + args.saveto + ".model_options.pkl", "rb") as fp:
 		model_options = pkl.load(fp)
 	globals().update(model_options)
+	isReload = args.isReload	
 else:
 	model_options = vars(args)
 	globals().update(model_options)
@@ -93,8 +95,9 @@ model = FeedForwardNN(emb_dims, no_of_cont=no_of_cont, lin_layer_sizes=lin_layer
 print(model_options)
 print(model)
 
-# case isReolad, reload model parameters
-if args.isReload:
+# case isReload, reload model parameters
+if isReload:
+	print("re-loading model parameters...")
 	model.load_state_dict(torch.load(data_prefix + "." + saveto + ".model_best.pkl"))
 
 # train for max_epochs
@@ -106,6 +109,7 @@ criterion = eval(loss)()
 
 model.train(data_prefix=data_prefix,
 	saveto=saveto,
+	isReload=isReload,
 	trainloader=trainloader,
 	validloader=validloader,
 	device=device,

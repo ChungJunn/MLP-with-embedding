@@ -79,13 +79,29 @@ class FeedForwardNN(nn.Module):
 
 		return F.log_softmax(self.output_layer(x), dim=1)
 
-	def train(self, data_prefix, saveto, trainloader, validloader, device, max_epochs, criterion, optimizer, validFreq, patience):
+	def train(self, data_prefix, saveto, isReload, trainloader, validloader, device, max_epochs, criterion, optimizer, validFreq, patience):
+		
+		# if isReload, load model_history file
+		import _pickle as pkl	
+		if isReload:
+			print("re-loading model history...")
+			with open(data_prefix + "." + saveto + ".model_history.pkl", "rb") as fp:
+				model_history = pkl.load(fp)
+			last_idx, last_err = model_history[-1]
+			print("last training session:  eidx: %d err:%.4f" % (last_idx, last_err))
+			start_idx = last_idx + 1
+			best_err = last_err
+		else:
+			start_idx = 0
+			best_err = 0
+			model_history = []
+
+		# initialize some variables and start training 
 		val_err = 0.0
-		best_err = 0.0
 		bad_counter = 0
 		estop = False
 
-		for eidx in range(max_epochs):
+		for eidx in range(start_idx, max_epochs):
 			for i, data in enumerate(trainloader):
 				y, cont_x, cat_x = data
 				y, cont_x, cat_x = y.to(device), cont_x.to(device), cat_x.to(device)
@@ -96,7 +112,7 @@ class FeedForwardNN(nn.Module):
 				loss.backward()
 				optimizer.step()
 
-		# for each validFreq validate model and save error
+		# at each validFreq, validate model and save error
 			if eidx % validFreq == 0:
 				val_err = 0.0
 				for i, data in enumerate(validloader):
@@ -108,6 +124,7 @@ class FeedForwardNN(nn.Module):
 					val_err += loss.item()
 
 				val_err /= i
+				model_history.append((eidx, val_err))
 				print("edix: %d, err: %.4f"%(eidx, val_err))
 
 		# if achieving best error, save to history file and save model
@@ -116,6 +133,9 @@ class FeedForwardNN(nn.Module):
 					best_err = val_err
 					bad_counter = 0
 					torch.save(self.state_dict(), data_prefix + "." + saveto + ".model_best.pkl")
+					with open(data_prefix + "." + saveto + ".model_history.pkl", "wb") as fp:
+						pkl.dump(model_history, fp) 
+
 		# increment bad_counter and early-stop if appropriate
 				if eidx > patience and val_err > best_err:
 					bad_counter += 1
