@@ -24,6 +24,7 @@ print("re-loading model options...")
 with open(args.data_prefix + "." + args.saveto + ".model_options.pkl", "rb") as fp:
 	model_options = pkl.load(fp)
 globals().update(model_options)
+max_epochs = args.max_epochs
 
 # load dataset and create dataloader from pkl file
 print("importing datasets from pkl file...")
