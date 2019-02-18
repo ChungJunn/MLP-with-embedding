@@ -17,26 +17,26 @@ parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTex
 parser.add_argument("--data_prefix", type=str, default='unsw', help="str, prefix included in the names of training and validation dataset in pkl files")
 
 # for model saving
-parser.add_argument("--saveto", type=str, default='saveto', help="str, During training, the model writes its parameters into a file whenever the model's validation score imporves. 'saveto' is a string to include in the name of that file (in addition to prefix)")
+parser.add_argument("--saveto", type=str, default='test', help="str, During training, the model writes its parameters into a file whenever the model's validation score imporves. 'saveto' is a string to include in the name of that file (in addition to prefix)")
 parser.add_argument("--isReload", dest='isReload', action='store_true', help="no argument, when this option is specified the model will re-load existing model from files. Only possible when the model with the same 'data_prefix' and 'saveto' had been training previously. The model will simply adopt all training, model, and other parameters from saved files.")
 parser.set_defaults(isReload=False)
 
 # model architecture
-parser.add_argument("--num_hidden", type=int, default=4, help="int, must be an integer within the range [1, 4]")
-parser.add_argument("--hidden1", type=int, default=200, help="int")
-parser.add_argument("--hidden2", type=int, default=100, help="int")
-parser.add_argument("--hidden3", type=int, default=50, help="int")
-parser.add_argument("--hidden4", type=int, default=20, help="int")
+parser.add_argument("--num_hidden", type=int, default=3, help="int, must be an integer within the range [1, 4]")
+parser.add_argument("--hidden1", type=int, default=30, help="int")
+parser.add_argument("--hidden2", type=int, default=20, help="int")
+parser.add_argument("--hidden3", type=int, default=10, help="int")
+parser.add_argument("--hidden4", type=int, default=None, help="int")
 parser.add_argument("--output_dim", type=int, default=2, help="int")
 
 # training parameters
 parser.add_argument("--batch_size", type=int, default=128, help="int")
 parser.add_argument("--loss", type=str, default='NLLLoss', help="str, name of loss function. Should match the names in torch.nn")
-parser.add_argument("--optimizer", type=str, default='Adadelta', help="str, name of optimizer. Should match the names torch.optim")
-parser.add_argument("--lr", type=float, default='0.05', help="float")
-parser.add_argument("--max_epochs", type=int, default=1000, help="int")
-parser.add_argument("--validFreq", type=int, default=5, help="int")
-parser.add_argument("--patience", type=int, default=10, help="int")
+parser.add_argument("--optimizer", type=str, default='RMSprop', help="str, name of optimizer. Should match the names torch.optim")
+parser.add_argument("--lr", type=float, default='0.002', help="float")
+parser.add_argument("--max_epochs", type=int, default=5000, help="int")
+parser.add_argument("--validFreq", type=int, default=1, help="int")
+parser.add_argument("--patience", type=int, default=50, help="int")
 
 args = parser.parse_args()
 
