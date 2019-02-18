@@ -60,8 +60,8 @@ import pandas as pd
 from model import TabularDataset
 from torch.utils.data import DataLoader
 
-df_train = pd.read_pickle(data_prefix + ".tr.pkl")
-df_valid = pd.read_pickle(data_prefix + ".val.pkl")
+df_train = pd.read_pickle(data_prefix + ".subtrain.pkl")
+df_valid = pd.read_pickle(data_prefix + ".valid.pkl")
 
 with open(data_prefix + ".cols.pkl", "rb") as fp:
 	cols_dict = pkl.load(fp)

@@ -24,7 +24,6 @@ print("re-loading model options...")
 with open(args.data_prefix + "." + args.saveto + ".model_options.pkl", "rb") as fp:
 	model_options = pkl.load(fp)
 globals().update(model_options)
-isReload = args.isReload	
 
 # load dataset and create dataloader from pkl file
 print("importing datasets from pkl file...")
@@ -83,7 +82,7 @@ for eidx in range(max_epochs):
 		running_loss += loss.item()
 
 		if i % 1000 == 999:
-			print("[%d th epoch %d th data] loss : %.4f" % (eidx+1, i+1, running_loss / i)
+			print("[%d th epoch %d th data] loss : %.4f" % (eidx+1, i+1, running_loss / i))
 			running_loss = 0.0
 
 torch.save(model.state_dict(), data_prefix + "." + saveto + ".model_best.pkl")

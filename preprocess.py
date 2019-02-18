@@ -96,15 +96,17 @@ train_data = df_train[valN:]
 
 # print shapes of resulting dataframes
 print("showing shapes of resulting dataframes")
-print("\ttrain : ", train_data.shape)
+print("\ttrain: ", df_train.shape)
+print("\tsubtrain : ", train_data.shape)
 print("\tvalid : ", valid_data.shape)
 print("\ttest : ", df_test.shape)
 
 #save results into pkl file
 print("saving into pkl files...")
 import _pickle as pkl
-train_data.to_pickle(args.data_prefix + ".tr.pkl")
-valid_data.to_pickle(args.data_prefix + ".val.pkl")
+df_train.to_pickle(args.data_prefix + ".train.pkl")
+train_data.to_pickle(args.data_prefix + ".subtrain.pkl")
+valid_data.to_pickle(args.data_prefix + ".valid.pkl")
 df_test.to_pickle(args.data_prefix + ".test.pkl")
 
 with open(args.data_prefix + ".cols.pkl", "wb") as fp:
