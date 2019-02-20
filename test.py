@@ -55,7 +55,9 @@ from model import TabularDataset
 from torch.utils.data import DataLoader
 
 print("importing dataset from pkl file...")
+df_train = pd.read_pickle(args.data_prefix + ".train.pkl")
 df_test = pd.read_pickle(args.data_prefix + ".test.pkl")
+
 
 testset = TabularDataset(df_test, cat_cols=cols_dict["cat_cols"], output_col=cols_dict["output_cols"])
 testloader = DataLoader(testset, batch_size=args.batch_size, shuffle=True, num_workers=1)
@@ -65,3 +67,5 @@ model.test(testloader=testloader,
 	data_prefix=args.data_prefix,
 	loadfrom=args.loadfrom, 
 	device=device)
+
+

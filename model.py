@@ -50,12 +50,12 @@ class FeedForwardNN(nn.Module):
 		first_lin_layer = nn.Linear(self.no_of_embs + self.no_of_cont, lin_layer_sizes[0])
 		
 		self.lin_layers = nn.ModuleList([first_lin_layer] + [nn.Linear(lin_layer_sizes[i], lin_layer_sizes[i+1]) for i in range(len(lin_layer_sizes) - 1)])
-		for lin_layer in self.lin_layers:
-			nn.init.kaiming_normal_(lin_layer.weight)
+		#for lin_layer in self.lin_layers:
+			#nn.init.kaiming_normal_(lin_layer.weight)
 
 		#output layer
 		self.output_layer = nn.Linear(lin_layer_sizes[-1], output_size)
-		nn.init.kaiming_normal_(self.output_layer.weight.data)
+		#nn.init.kaiming_normal_(self.output_layer.weight.data)
 
 
 	def forward(self, cont_data, cat_data):

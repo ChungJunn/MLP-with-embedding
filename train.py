@@ -103,6 +103,7 @@ print("training...")
 optimizer = "torch.optim." + optimizer
 loss = "torch.nn." + loss
 optimizer = eval(optimizer)(model.parameters(), lr=lr)
+#optimizer = torch.optim.RMSprop(model.parameters(), lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=False)
 criterion = eval(loss)()
 
 model.train(data_prefix=data_prefix,

@@ -64,6 +64,7 @@ print("training...")
 optimizer = "torch.optim." + optimizer
 loss = "torch.nn." + loss
 optimizer = eval(optimizer)(model.parameters(), lr=lr)
+#optimizer = torch.optim.RMSprop(model.parameters(), lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=False)
 criterion = eval(loss)()
 
 running_loss = 0.0
@@ -81,9 +82,9 @@ for eidx in range(max_epochs):
 		optimizer.step()
 
 		running_loss += loss.item()
-
-		if i % 1000 == 999:
-			print("[%d th epoch %d th data] loss : %.4f" % (eidx+1, i+1, running_loss / i))
-			running_loss = 0.0
+	
+	running_loss /= i
+	print("epoch: %d err : %.4f" % (eidx, running_loss))
+	running_loss = 0.0
 
 torch.save(model.state_dict(), data_prefix + "." + saveto + ".model_best.pkl")
